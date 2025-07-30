@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>RT 계산기 (분:초)</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: white;
+      padding: 40px;
+      text-align: center;
+    }
+    .container {
+      background-color: white;
+      padding: 30px;
+      border-radius: 10px;
+      display: block;
+      margin: 0 auto 100px;
+      max-width: 500px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    input {
+      padding: 10px;
+      font-size: 16px;
+      width: 100px;
+      text-align: center;
+      margin: 5px;
+    }
+    .result {
+      margin-top: 20px;
+      font-size: 20px;
+      font-weight: bold;
+      min-height: 28px;
+    }
+    .time-inputs {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>RT 계산기</h2>
+    <p>TC 입력 형식: MMSS (예: 1402)</p>
+    <input id="startTC" type="text" placeholder="시작 TC" oninput="calculateRT()">
+    <input id="endTC" type="text" placeholder="끝 TC" oninput="calculateRT()">
+    <div id="result" class="result">RT: </div>
+  </div>
+
+  <div class="container">
+    <h2>시간 더하기 계산기</h2>
+    <p>시간 입력 형식: MMSS (여러 항목을 입력하면 자동 합산)</p>
+    <div class="time-inputs" id="timeInputs">
+      <input type="text" placeholder="MMSS" oninput="calculateMultiSum()">
+      <input type="text" placeholder="MMSS" oninput="calculateMultiSum()">
+    </div>
+    <button onclick="addTimeInput()">입력란 추가</button>
+    <div id="sumResult" class="result">합계: </div>
+  </div>
+
+  <script>
+    function tcToSeconds(tc) {
+      if (tc.length !== 4 || isNaN(tc)) return NaN;
+      let min = parseInt(tc.slice(0, 2));
+      let sec = parseInt(tc.slice(2));
+      return min * 60 + sec;
+    }
+
+    function secondsToMinSec(seconds) {
+      const min = Math.floor(seconds / 60);
+      const sec = String(seconds % 60).padStart(2, '0');
+      return `${min}:${sec}`;
+    }
+
+    function calculateRT() {
+      const start = document.getElementById('startTC').value;
+      const end = document.getElementById('endTC').value;
+      const startSec = tcToSeconds(start);
+      const endSec = tcToSeconds(end);
+
+      if (isNaN(startSec) || isNaN(endSec) || endSec < startSec) {
+        document.getElementById('result').innerText = '입력이 잘못되었습니다.';
+        return;
+      }
+
+      const diff = endSec - startSec;
+      document.getElementById('result').innerText = `RT: ${secondsToMinSec(diff)}`;
+    }
+
+    function calculateMultiSum() {
+      const inputs = document.querySelectorAll('#timeInputs input');
+      let total = 0;
+      let hasError = false;
+
+      inputs.forEach(input => {
+        const val = input.value.trim();
+        if (val === '') return;
+        const sec = tcToSeconds(val);
+        if (isNaN(sec)) hasError = true;
+        else total += sec;
+      });
+
+      const result = document.getElementById('sumResult');
+      result.innerText = hasError ? '잘못된 형식이 있습니다.' : `합계: ${secondsToMinSec(total)}`;
+    }
+
+    function addTimeInput() {
+      const div = document.getElementById('timeInputs');
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.placeholder = 'MMSS';
+      input.oninput = calculateMultiSum;
+      div.appendChild(input);
+    }
+  </script>
+</body>
+</html>
